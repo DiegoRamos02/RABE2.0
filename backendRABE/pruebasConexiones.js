@@ -15,6 +15,8 @@ const Factura = require('../backendRABE/facturas');
 
 // A Ricardo le encanta el pene de burro 
 
+//ICKKCK
+
 /*
 
 <------------------------- Codigos que corroboran el funcionamiento del controlador facturas.js---------------------->
