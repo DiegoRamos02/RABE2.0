@@ -11,7 +11,7 @@ const Ticket = require('../backendRABE/tickets');
 const Factura = require('../backendRABE/facturas');
 
 
-
+//PENE DE BURRO
 /*
 
 <------------------------- Codigos que corroboran el funcionamiento del controlador facturas.js---------------------->
