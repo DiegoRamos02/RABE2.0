@@ -11,12 +11,6 @@ const Ticket = require('../backendRABE/tickets');
 const Factura = require('../backendRABE/facturas');
 
 
-//PENE DE BURRO 
-
-// A Ricardo le encanta el pene de burro 
-
-//ICKKCK
-
 /*
 
 <------------------------- Codigos que corroboran el funcionamiento del controlador facturas.js---------------------->
