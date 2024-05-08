@@ -87,6 +87,17 @@ class Usuario {
             }
         });
     }
+
+    // Obtener usuario por su nombre
+    static obtenerPorNombreUsuario(nombreUsuario, callback) {
+        pool.query('SELECT * FROM Usuarios WHERE "NombreUsuario" = $1', [nombreUsuario], (error, results) => {
+            if (error) {
+                callback(error, null);
+            } else {
+                callback(null, results.rows[0]);
+            }
+        });
+    }
 }
 
 module.exports = Usuario;

@@ -460,8 +460,8 @@ Usuario.obtenerTodos((error, usuarios) => {
 
 // Ejemplo para agregar un nuevo usuario
 const nuevoUsuario = {
-  nombreUsuario: 'SeñorB',
-  contraseña: '123Sexoanal?',
+  nombreUsuario: 'Diego',
+  contraseña: '12345678',
   rol: 'Cajero'
 };
 Usuario.agregarUsuario(nuevoUsuario, (error, usuario) => {

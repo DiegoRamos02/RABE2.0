@@ -1,5 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const Usuario = require('../backendRABE/usuarios');
+const bcrypt = require('bcrypt');
 
 // Función para crear una nueva ventana de Electron
 function createWindow() {
@@ -31,3 +33,4 @@ app.on('activate', () => {
         createWindow();
     }
 });
+
