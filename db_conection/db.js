@@ -1,22 +1,27 @@
-// Conexion a la base de datos
-const { Pool } = require('pg');
+// Conexion a la base de datos MySQL
+const mysql = require('mysql2');
 
-const pool = new Pool({
-    host: 'localhost', // La direccion de la base de datos, en este caso es el mismo equipo
-    port: 5432,
-    user: 'postgres',
-    password: '02Diegorg?',
-    database: 'RABE'
+// Configura los parámetros de conexión
+const pool = mysql.createPool({
+    host: 'localhost', // Dirección de la base de datos
+    port: 3306,        // Puerto predeterminado de MySQL
+    user: 'root',      
+    password: '02Diegorg?', 
+    database: 'RABE', 
+    waitForConnections: true,
+    connectionLimit: 10,      // Número máximo de conexiones simultáneas
+    queueLimit: 0
 });
 
-// Aqui hacemos la conexion a la base de datos
-pool.connect(err => {
+// Prueba la conexión
+pool.getConnection((err, connection) => {
     if (err) {
-        console.error('Error de conexión', err.stack);
-    } else {
-        console.log('Conectado a la base de datos');
+        console.error('Error de conexión:', err.stack);
+        return;
     }
+    console.log('Conectado a la base de datos MySQL');
+    connection.release(); // Libera la conexión
 });
 
-// Exportamos la instancia pool para poder utilizarla en otros archivos del proyecto
+// Exporta el pool para utilizarlo en otros archivos
 module.exports = pool;
