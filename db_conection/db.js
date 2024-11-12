@@ -7,7 +7,7 @@ const pool = mysql.createPool({
     port: 3306,        // Puerto predeterminado de MySQL
     user: 'root',      
     password: '02Diegorg?', 
-    database: 'RABE', 
+    database: 'rabe', 
     waitForConnections: true,
     connectionLimit: 10,      // Número máximo de conexiones simultáneas
     queueLimit: 0

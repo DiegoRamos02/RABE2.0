@@ -1,3 +1,4 @@
+// Backend catalogo de productos
 const pool = require('../db_conection/db');
 
 class CatalogoProductos {
@@ -11,154 +12,135 @@ class CatalogoProductos {
         this.idProductoInventario = idProductoInventario;
     }
 
-    static obtenerTodos(callback) {
-        const query = `
-        SELECT cp.*, pi."Stock disponible"
-        FROM "Catálogo de Productos" cp
-        INNER JOIN "Productos/Inventario" pi ON cp."ID de producto en inventario" = pi."ID de producto"
-    `;
+    static obtenerTodos(callback) {     // Funciono correctamente
+        console.log("Iniciando consulta de obtenerTodos...");
+        const query = `SELECT * FROM Catalogo_de_Productos;`;
         pool.query(query, (error, results) => {
             if (error) {
                 console.error("Error al obtener todos los productos:", error);
                 callback(error, null);
             } else {
-                callback(null, results.rows);
+                console.log("Resultados de Catalogo_de_Productos:", results);
+                callback(null, results);
             }
         });
     }
 
-
-    static obtenerPorId(id, callback) {
+    static obtenerPorId(id, callback) {     // Funciono correctamente
         const query = `
-        SELECT cp.*, pi."Stock disponible"
-        FROM "Catálogo de Productos" cp
-        INNER JOIN "Productos/Inventario" pi ON cp."ID de producto en inventario" = pi."ID de producto"
-        WHERE cp."ID" = $1
+        SELECT cp.*, pi.Stock_disponible
+        FROM Catalogo_de_Productos cp
+        LEFT JOIN Productos_Inventario pi ON cp.ID_de_producto_en_inventario = pi.ID_de_producto
+        WHERE cp.ID = ?
     `;
         pool.query(query, [id], (error, results) => {
             if (error) {
                 callback(error, null);
             } else {
-                callback(null, results.rows[0]);
+                console.log("Resultados de la consulta obtenerPorId:", results); // Log para verificar resultados
+                callback(null, results[0]);
             }
         });
     }
 
-    static buscarPorCategoria(categoria, callback) {
+    static buscarPorCategoria(categoria, callback) {    // Funciono correctamente
         const query = `
-            SELECT cp.*, pi."Stock disponible"
-            FROM "Catálogo de Productos" cp
-            INNER JOIN "Productos/Inventario" pi ON cp."ID de producto en inventario" = pi."ID de producto"
-            WHERE cp."Categoría" = $1
+            SELECT cp.*, pi.Stock_disponible
+            FROM Catalogo_de_Productos cp
+            LEFT JOIN Productos_Inventario pi ON cp.ID_de_producto_en_inventario = pi.ID_de_producto
+            WHERE cp.Categoria = ?
         `;
         pool.query(query, [categoria], (error, results) => {
             if (error) {
                 callback(error, null);
             } else {
-                callback(null, results.rows);
+                callback(null, results);
             }
         });
     }
 
-    static ordenarProductos(criterio, callback) {
+    static ordenarProductos(criterio, categoria, callback) {
         let orderByClause = '';
         switch (criterio) {
             case 'nombre':
-                orderByClause = 'cp."Nombre"';
+                orderByClause = 'cp.Nombre';
                 break;
             case 'precio':
-                orderByClause = 'cp."Precio"';
+                orderByClause = 'cp.Precio';
                 break;
             case 'categoria':
-                orderByClause = 'cp."Categoría"';
+                orderByClause = 'cp.Categoria';
                 break;
             default:
-                orderByClause = 'cp."Nombre"'; // Ordenar por nombre por defecto
+                orderByClause = 'cp.Nombre';
         }
 
         const query = `
-            SELECT cp.*, pi."Stock disponible"
-            FROM "Catálogo de Productos" cp
-            INNER JOIN "Productos/Inventario" pi ON cp."ID de producto en inventario" = pi."ID de producto"
-            ORDER BY ${orderByClause}
-        `;
+        SELECT cp.*, pi.Stock_disponible
+        FROM Catalogo_de_Productos cp
+        INNER JOIN Productos_Inventario pi ON cp.ID_de_producto_en_inventario = pi.ID_de_producto
+        WHERE cp.Categoria = ?
+        ORDER BY ${orderByClause}
+    `;
 
-        pool.query(query, (error, results) => {
+        pool.query(query, [categoria], (error, results) => {
             if (error) {
                 callback(error, null);
             } else {
-                callback(null, results.rows);
+                callback(null, results);
             }
         });
     }
 
-    static obtenerCantidadDisponible(id, callback) {
+    static obtenerCantidadDisponible(id, callback) { // Funciona correctamente
         const query = `
-            SELECT pi."Stock disponible"
-            FROM "Catálogo de Productos" cp
-            INNER JOIN "Productos/Inventario" pi ON cp."ID de producto en inventario" = pi."ID de producto"
-            WHERE cp."ID" = $1
-        `;
+        SELECT pi.Stock_disponible
+        FROM Catalogo_de_Productos cp
+        INNER JOIN Productos_Inventario pi ON cp.ID_de_producto_en_inventario = pi.ID_de_producto
+        WHERE cp.ID = ?
+    `;
         pool.query(query, [id], (error, results) => {
             if (error) {
                 callback(error, null);
+            } else if (results.length > 0) {
+                callback(null, results[0].Stock_disponible);
             } else {
-                callback(null, results.rows[0]['Stock disponible']);
+                callback(null, null); // No se encontró el producto
             }
         });
     }
 
     static agregarProducto(producto, callback) {
         const { nombre, descripcion, precio, cantidadDisponible, categoria } = producto;
-        // Insertar el producto en el catálogo
+        // Primero, inserta el producto en Catalogo_de_Productos
         pool.query(
-            'INSERT INTO "Catálogo de Productos" ("Nombre", "Descripción", "Precio", "Cantidad Disponible", "Categoría") VALUES ($1, $2, $3, $4, $5) RETURNING "ID"',
+            'INSERT INTO Catalogo_de_Productos (Nombre, Descripcion, Precio, Cantidad_Disponible, Categoria) VALUES (?, ?, ?, ?, ?)',
             [nombre, descripcion, precio, cantidadDisponible, categoria],
             (error, results) => {
                 if (error) {
                     callback(error, null);
                 } else {
-                    const productoId = results.rows[0].ID;
-                    // Insertar el producto en el inventario con el ID generado automáticamente
+                    const productoId = results.insertId;
+                    // Luego, inserta el producto en Productos_Inventario
                     pool.query(
-                        'INSERT INTO "Productos/Inventario" ("ID de producto", "Nombre del producto", "Descripción", "Precio", "Categoría", "Stock disponible", "Stock mínimo") VALUES ($1, $2, $3, $4, $5, $6, $7)',
-                        [productoId, nombre, descripcion, precio, categoria, cantidadDisponible, 0], // Stock mínimo inicial 0
-                        (error, _) => {
-                            if (error) {
-                                callback(error, null);
-                            } else {
-                                callback(null, productoId);
-                            }
-                        }
-                    );
-                }
-            }
-        );
-    }
-
-
-
-
-
-    static actualizarProducto(id, nuevoProducto, callback) {
-        const { nombre, descripcion, precio, cantidadDisponible, categoria } = nuevoProducto;
-        // Actualizar el producto en el catálogo
-        pool.query(
-            'UPDATE "Catálogo de Productos" SET "Nombre" = $1, "Descripción" = $2, "Precio" = $3, "Cantidad Disponible" = $4, "Categoría" = $5 WHERE "ID" = $6',
-            [nombre, descripcion, precio, cantidadDisponible, categoria, id],
-            (error) => {
-                if (error) {
-                    callback(error, null);
-                } else {
-                    // Actualizar el producto en el inventario si el nombre o la categoría han cambiado
-                    pool.query(
-                        'UPDATE "Productos/Inventario" SET "Nombre del producto" = $1, "Descripción" = $2, "Precio" = $3, "Categoría" = $4 WHERE "ID de producto" = $5',
-                        [nombre, descripcion, precio, categoria, id],
+                        'INSERT INTO Productos_Inventario (ID_de_producto, Nombre_del_producto, Descripcion, Precio, Categoria, Stock_disponible, Stock_minimo) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                        [productoId, nombre, descripcion, precio, categoria, cantidadDisponible, 0],
                         (error) => {
                             if (error) {
                                 callback(error, null);
                             } else {
-                                callback(null, id);
+                                // Finalmente, actualiza el ID_de_producto_en_inventario en Catalogo_de_Productos
+                                pool.query(
+                                    'UPDATE Catalogo_de_Productos SET ID_de_producto_en_inventario = ? WHERE ID = ?',
+                                    [productoId, productoId],
+                                    (error) => {
+                                        if (error) {
+                                            callback(error, null);
+                                        } else {
+                                            callback(null, productoId);
+                                        }
+                                    }
+                                );
                             }
                         }
                     );
@@ -167,28 +149,78 @@ class CatalogoProductos {
         );
     }
 
+    static actualizarProducto(id, nuevoProducto, callback) { // Funciono correctamente
+        const { nombre, descripcion, precio, cantidadDisponible, categoria } = nuevoProducto;
 
-    static eliminarProducto(id, callback) {
-        // Eliminar el producto del catálogo
-        pool.query('DELETE FROM "Catálogo de Productos" WHERE "ID" = $1', [id], (error) => {
+        // Primero, actualizamos en Catalogo_de_Productos
+        pool.query(
+            'UPDATE Catalogo_de_Productos SET Nombre = ?, Descripcion = ?, Precio = ?, Cantidad_Disponible = ?, Categoria = ? WHERE ID = ?',
+            [nombre, descripcion, precio, cantidadDisponible, categoria, id],
+            (error, results) => {
+                if (error) {
+                    callback(error, null);
+                } else if (results.affectedRows === 0) {
+                    // Si no se encontró el producto en Catalogo_de_Productos
+                    callback(new Error(`Producto con ID ${id} no encontrado en Catalogo_de_Productos.`), null);
+                } else {
+                    // Luego, obtenemos el ID_de_producto_en_inventario de Catalogo_de_Productos para actualizar en Productos_Inventario
+                    pool.query(
+                        'SELECT ID_de_producto_en_inventario FROM Catalogo_de_Productos WHERE ID = ?',
+                        [id],
+                        (error, results) => {
+                            if (error || results.length === 0) {
+                                callback(error || new Error("Producto no encontrado en Catalogo_de_Productos"), null);
+                            } else {
+                                const idProductoInventario = results[0].ID_de_producto_en_inventario;
+
+                                // Verificamos si el producto tiene un ID_de_producto_en_inventario válido
+                                if (idProductoInventario === null) {
+                                    callback(null, `Producto con ID ${id} actualizado en Catalogo_de_Productos, pero no tiene entrada en Productos_Inventario.`);
+                                } else {
+                                    // Actualizamos en Productos_Inventario usando el ID obtenido
+                                    pool.query(
+                                        'UPDATE Productos_Inventario SET Nombre_del_producto = ?, Descripcion = ?, Precio = ?, Categoria = ? WHERE ID_de_producto = ?',
+                                        [nombre, descripcion, precio, categoria, idProductoInventario],
+                                        (error) => {
+                                            if (error) {
+                                                callback(error, null);
+                                            } else {
+                                                callback(null, `Producto con ID ${id} actualizado en ambas tablas.`);
+                                            }
+                                        }
+                                    );
+                                }
+                            }
+                        }
+                    );
+                }
+            }
+        );
+    }
+
+    static eliminarProducto(id, callback) {     // Funciono correctamente
+        // Primero elimina el producto de Catalogo_de_Productos
+        pool.query('DELETE FROM Catalogo_de_Productos WHERE ID = ?', [id], (error, results) => {
             if (error) {
                 callback(error, null);
+            } else if (results.affectedRows === 0) {
+                // Si no se encontró el producto en Catalogo_de_Productos
+                callback(null, `No se encontró el producto con ID ${id} en Catalogo_de_Productos.`);
             } else {
-                // Eliminar el producto del inventario
-                pool.query('DELETE FROM "Productos/Inventario" WHERE "ID de producto" = $1', [id], (error) => {
+                // Después intenta eliminar de Productos_Inventario
+                pool.query('DELETE FROM Productos_Inventario WHERE ID_de_producto = ?', [id], (error, results) => {
                     if (error) {
                         callback(error, null);
                     } else {
-                        callback(null, `Producto con ID ${id} eliminado con éxito.`);
+                        callback(null, `Producto con ID ${id} eliminado con éxito de ambas tablas.`);
                     }
                 });
             }
         });
     }
-
-
 }
 
 module.exports = CatalogoProductos;
+
 
 
