@@ -10,43 +10,51 @@ class Usuario {
     }
 
     // Método para obtener todos los usuarios
-    static obtenerTodos(callback) {
+    static obtenerTodos(callback) {             // Funciono correctamente
         pool.query('SELECT * FROM Usuarios', (error, results) => {
             if (error) {
                 callback(error, null);
             } else {
-                callback(null, results.rows);
+                callback(null, results); // Accedemos directamente a results en MySQL
             }
         });
     }
 
-    // Método para obtener un usuario por su nombre de usuario
-    static obtenerIDUsuario(id, callback) {
-        pool.query('SELECT * FROM Usuarios WHERE "ID" = $1', [id], (error, results) => {
+    // Método para obtener un usuario por su ID
+    static obtenerIDUsuario(id, callback) {     // Funciono correctamente
+        pool.query('SELECT * FROM Usuarios WHERE ID = ?', [id], (error, results) => {
             if (error) {
                 callback(error, null);
+            } else if (results.length > 0) {
+                callback(null, results[0]); // Accede directamente al primer resultado en MySQL
             } else {
-                callback(null, results.rows[0]);
+                callback(new Error('Usuario no encontrado'), null);
             }
         });
     }
 
     // Método para agregar un nuevo usuario
-    static agregarUsuario(usuario, callback) {
+    static agregarUsuario(usuario, callback) {      // Funciona correctamente
         const { nombreUsuario, contraseña, rol } = usuario;
+
         // Hashear la contraseña antes de guardarla en la base de datos
         bcrypt.hash(contraseña, 10, (error, hash) => {
             if (error) {
                 callback(error, null);
             } else {
                 pool.query(
-                    'INSERT INTO Usuarios ("NombreUsuario", "ContraseñaHash", "Rol") VALUES ($1, $2, $3) RETURNING *',
+                    'INSERT INTO Usuarios (NombreUsuario, ContraseñaHash, Rol) VALUES (?, ?, ?)',
                     [nombreUsuario, hash, rol],
                     (error, results) => {
                         if (error) {
                             callback(error, null);
                         } else {
-                            callback(null, results.rows[0]);
+                            const nuevoUsuario = {
+                                id: results.insertId, // Obtener el ID generado automáticamente
+                                nombreUsuario,
+                                rol,
+                            };
+                            callback(null, nuevoUsuario);
                         }
                     }
                 );
@@ -57,19 +65,28 @@ class Usuario {
     // Método para actualizar un usuario
     static actualizarUsuario(id, nuevoUsuario, callback) {
         const { nombreUsuario, contraseña, rol } = nuevoUsuario;
+
         // Hashear la nueva contraseña antes de guardarla en la base de datos
         bcrypt.hash(contraseña, 10, (error, hash) => {
             if (error) {
                 callback(error, null);
             } else {
                 pool.query(
-                    'UPDATE Usuarios SET "NombreUsuario" = $1, "ContraseñaHash" = $2, "Rol" = $3 WHERE "ID" = $4 RETURNING *',
+                    'UPDATE Usuarios SET NombreUsuario = ?, ContraseñaHash = ?, Rol = ? WHERE ID = ?',
                     [nombreUsuario, hash, rol, id],
                     (error, results) => {
                         if (error) {
                             callback(error, null);
+                        } else if (results.affectedRows > 0) {
+                            // Si se actualizaron filas, devolvemos los datos del usuario actualizado
+                            const usuarioActualizado = {
+                                id,
+                                nombreUsuario,
+                                rol,
+                            };
+                            callback(null, usuarioActualizado);
                         } else {
-                            callback(null, results.rows[0]);
+                            callback(new Error('Usuario no encontrado'), null);
                         }
                     }
                 );
@@ -78,23 +95,27 @@ class Usuario {
     }
 
     // Método para eliminar un usuario
-    static eliminarUsuario(id, callback) {
-        pool.query('DELETE FROM Usuarios WHERE "ID" = $1', [id], (error, results) => {
+    static eliminarUsuario(id, callback) {      // Funciono correctamente
+        pool.query('DELETE FROM Usuarios WHERE ID = ?', [id], (error, results) => {
             if (error) {
                 callback(error, null);
-            } else {
+            } else if (results.affectedRows > 0) {
                 callback(null, `Usuario con ID ${id} eliminado con éxito.`);
+            } else {
+                callback(new Error(`Usuario con ID ${id} no encontrado`), null);
             }
         });
     }
 
-    // Obtener usuario por su nombre
+    // Método para obtener un usuario por su nombre de usuario
     static obtenerPorNombreUsuario(nombreUsuario, callback) {
-        pool.query('SELECT * FROM Usuarios WHERE "NombreUsuario" = $1', [nombreUsuario], (error, results) => {
+        pool.query('SELECT * FROM Usuarios WHERE NombreUsuario = ?', [nombreUsuario], (error, results) => {
             if (error) {
                 callback(error, null);
+            } else if (results.length > 0) {
+                callback(null, results[0]); // Accede directamente al primer resultado en MySQL
             } else {
-                callback(null, results.rows[0]);
+                callback(new Error('Usuario no encontrado'), null);
             }
         });
     }

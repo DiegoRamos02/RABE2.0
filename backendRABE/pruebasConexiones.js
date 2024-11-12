@@ -2,6 +2,7 @@
 // Importando los controladores de la base de datos
 const CatalogoProductos = require('./catalogoProductos');
 const Producto = require('./productoInventario');
+const Usuario = require('./usuarios');
 
 // <------------------ catalagoProductos.js Pruebas ------------------->
 /*
@@ -263,4 +264,97 @@ function pruebaVerificarStock(idProducto) {
 
 // Llama a la función de prueba
 pruebaVerificarStock(10); // Cambia el ID según el producto que deseas verificar
+
+// <----------------- Controladores para usuarios -------------->
+
+// Funcion para obtener los usuarios
+function pruebaObtenerTodosUsuarios() {
+  Usuario.obtenerTodos((error, usuarios) => {
+    if (error) {
+      console.error("Error al obtener todos los usuarios:", error);
+    } else {
+      console.log("Usuarios:", usuarios);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerTodosUsuarios();
+
+// Funcion para obtener usuario por ID
+function pruebaObtenerIDUsuario(id) {
+  Usuario.obtenerIDUsuario(id, (error, usuario) => {
+    if (error) {
+      console.error(`Error al obtener el usuario con ID ${id}:`, error);
+    } else {
+      console.log(`Usuario con ID ${id}:`, usuario);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerIDUsuario(1); 
+
+// Funcion para agregar un nuevo usuario 
+function pruebaAgregarUsuario() {
+  const nuevoUsuario = {
+    nombreUsuario: 'usuario_test',
+    contraseña: 'password123',
+    rol: 'admin'
+  };
+
+  Usuario.agregarUsuario(nuevoUsuario, (error, usuario) => {
+    if (error) {
+      console.error("Error al agregar el usuario:", error);
+    } else {
+      console.log("Usuario agregado:", usuario);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaAgregarUsuario();
+
+// Actualizar usuarios
+function pruebaActualizarUsuario(idUsuario) {
+  const usuarioActualizado = {
+    nombreUsuario: 'usuario_actualizado',
+    contraseña: 'nueva_password123',
+    rol: 'admin'
+  };
+
+  Usuario.actualizarUsuario(idUsuario, usuarioActualizado, (error, usuario) => {
+    if (error) {
+      console.error(`Error al actualizar el usuario con ID ${idUsuario}:`, error);
+    } else {
+      console.log(`Usuario actualizado:`, usuario);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaActualizarUsuario(3); 
+
+// Funcion para eliminar usuarios
+function pruebaEliminarUsuario(idUsuario) {
+  Usuario.eliminarUsuario(idUsuario, (error, mensaje) => {
+    if (error) {
+      console.error(`Error al eliminar el usuario con ID ${idUsuario}:`, error);
+    } else {
+      console.log(mensaje);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaEliminarUsuario(3);
+
+// Funcion para buscar usuarios por nombre
+function pruebaObtenerPorNombreUsuario(nombreUsuario) {
+  Usuario.obtenerPorNombreUsuario(nombreUsuario, (error, usuario) => {
+    if (error) {
+      console.error(`Error al obtener el usuario con nombre "${nombreUsuario}":`, error);
+    } else {
+      console.log(`Usuario con nombre "${nombreUsuario}":`, usuario);
+    }
+  });
+}
+
+// Llama a la función de prueba
+pruebaObtenerPorNombreUsuario('admin1');
 */
