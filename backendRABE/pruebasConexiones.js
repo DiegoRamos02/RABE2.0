@@ -6,6 +6,8 @@ const Usuario = require('./usuarios');
 const Empleado = require('./empleados');
 const PedidoVenta = require('./pedidoVenta');
 const Cliente = require('./clientes');
+const Ticket = require('./tickets');
+const MetodoPago = require('./metodosPago');
 
 // <------------------ catalagoProductos.js Pruebas ------------------->
 /*
@@ -656,7 +658,7 @@ function pruebaActualizarCliente(idCliente) {
 }
 // Llama a la función de prueba
 pruebaActualizarCliente(4);
-*/
+
 // Funcion para eliminar clientes por ID
 function pruebaEliminarCliente(idCliente) {
   Cliente.eliminarCliente(idCliente, (error, mensaje) => {
@@ -669,3 +671,154 @@ function pruebaEliminarCliente(idCliente) {
 }
 // Llama a la función de prueba
 pruebaEliminarCliente(1);
+
+// <---------- Controlador para tickets.js ----------->
+// Funcion para agregar ticket
+function pruebaAgregarTicket() {
+  const nuevoTicket = {
+    id_pedido_venta: 8,  // Cambia el ID según el pedido/venta que deseas asociar
+    fecha_hora_emision: new Date(),
+    detalles: 'Detalles adicionales sobre la venta'
+  };
+
+  Ticket.agregarTicket(nuevoTicket, (error, ticketId) => {
+    if (error) {
+      console.error("Error al agregar el ticket:", error);
+    } else {
+      console.log("Ticket agregado con ID:", ticketId);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaAgregarTicket();
+
+// Funcion para obtener todos los tickets
+function pruebaObtenerTodosTickets() {
+  Ticket.obtenerTodos((error, tickets) => {
+    if (error) {
+      console.error("Error al obtener todos los tickets:", error);
+    } else {
+      console.log("Tickets:", tickets);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerTodosTickets();
+
+// Funcion para obtener ticket por ID
+function pruebaObtenerTicketPorId(idTicket) {
+  Ticket.obtenerPorId(idTicket, (error, ticket) => {
+    if (error) {
+      console.error(`Error al obtener el ticket con ID ${idTicket}:`, error);
+    } else {
+      console.log(`Ticket con ID ${idTicket}:`, ticket);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerTicketPorId(1);
+
+// Funcion para actualizar el ticket
+function pruebaActualizarTicket(idTicket) {
+  const ticketActualizado = {
+    id_pedido_venta: 8, // Cambia según corresponda
+    fecha_hora_emision: new Date(),
+    total: 150.00,
+    detalles: 'Detalles actualizados sobre la venta'
+  };
+
+  Ticket.actualizarTicket(idTicket, ticketActualizado, (error, ticket) => {
+    if (error) {
+      console.error(`Error al actualizar el ticket con ID ${idTicket}:`, error);
+    } else {
+      console.log("Ticket actualizado:", ticket);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaActualizarTicket(1);
+
+// Funcion para obetener ticket por pedido
+function pruebaObtenerTicketsPorPedidoVenta(idPedidoVenta) {
+  Ticket.obtenerTicketsPorPedidoVenta(idPedidoVenta, (error, tickets) => {
+    if (error) {
+      console.error(`Error al obtener los tickets del pedido/venta con ID ${idPedidoVenta}:`, error);
+    } else {
+      console.log(`Tickets del pedido/venta con ID ${idPedidoVenta}:`, tickets);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerTicketsPorPedidoVenta(8);
+
+// Funcion para eliminar ticket por ID
+function pruebaEliminarTicket(idTicket) {
+  Ticket.eliminarTicket(idTicket, (error, mensaje) => {
+    if (error) {
+      console.error(`Error al eliminar el ticket con ID ${idTicket}:`, error);
+    } else {
+      console.log(mensaje);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaEliminarTicket(1);
+
+// <---------- Controlador para metodos de pago ----------->
+// Funcion para obetener todos los metodos de pago
+function pruebaObtenerTodosMetodosPago() {
+  MetodoPago.obtenerTodos((error, metodosPago) => {
+    if (error) {
+      console.error("Error al obtener todos los métodos de pago:", error);
+    } else {
+      console.log("Métodos de Pago:", metodosPago);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerTodosMetodosPago();
+
+// Funcion para obtener metodo de pago por ID
+function pruebaObtenerMetodoPagoPorID(idMetodoPago) {
+  MetodoPago.obtenerPorID(idMetodoPago, (error, metodoPago) => {
+    if (error) {
+      console.error(`Error al obtener el método de pago con ID ${idMetodoPago}:`, error);
+    } else {
+      console.log(`Método de Pago con ID ${idMetodoPago}:`, metodoPago);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerMetodoPagoPorID(1);
+
+// Funcion para agregar un nuevo metodo de pago
+function pruebaAgregarMetodoPago() {
+  const nuevoMetodo = {
+    nombreMetodo: 'Vales de despensa',
+    descripcion: 'Pago mediante tarjeta de crédito Visa o MasterCard',
+    activo: true
+  };
+
+  MetodoPago.agregarMetodoPago(nuevoMetodo, (error, metodoPago) => {
+    if (error) {
+      console.error("Error al agregar el método de pago:", error);
+    } else {
+      console.log("Método de pago agregado:", metodoPago);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaAgregarMetodoPago();
+*/
+// Funcion para eliminar metodo de pago
+function pruebaEliminarMetodoPago(idMetodoPago) {
+  MetodoPago.eliminarMetodoPago(idMetodoPago, (error, mensaje) => {
+    if (error) {
+      console.error(`Error al eliminar el método de pago con ID ${idMetodoPago}:`, error);
+    } else {
+      console.log(mensaje);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaEliminarMetodoPago(4);

@@ -9,66 +9,61 @@ class MetodoPago {
     }
 
     // Método para obtener todos los métodos de pago
-    static obtenerTodos(callback) {
-        pool.query('SELECT * FROM "Métodos de Pago"', (error, results) => {
+    static obtenerTodos(callback) {                     // Funciona perfectamente
+        pool.query('SELECT * FROM Metodos_de_Pago', (error, results) => {
             if (error) {
                 callback(error, null);
             } else {
-                callback(null, results.rows);
+                callback(null, results); // En MySQL, los resultados están directamente en results
             }
         });
     }
 
     // Método para obtener un método de pago por su ID
-    static obtenerPorID(id, callback) {
-        pool.query('SELECT * FROM "Métodos de Pago" WHERE "ID" = $1', [id], (error, results) => {
+    static obtenerPorID(id, callback) {                 // Funciona perfectamente
+        pool.query('SELECT * FROM Metodos_de_Pago WHERE ID = ?', [id], (error, results) => {
             if (error) {
                 callback(error, null);
+            } else if (results.length > 0) {
+                callback(null, results[0]); // Accede al primer resultado en MySQL
             } else {
-                callback(null, results.rows[0]);
+                callback(new Error('Método de pago no encontrado'), null);
             }
         });
     }
 
     // Método para agregar un nuevo método de pago
-    static agregarMetodoPago(metodoPago, callback) {
+    static agregarMetodoPago(metodoPago, callback) {    // Funciona correctamente
         const { nombreMetodo, descripcion, activo } = metodoPago;
         pool.query(
-            'INSERT INTO "Métodos de Pago" ("Nombre del Método", "Descripción", "Activo") VALUES ($1, $2, $3) RETURNING *',
+            'INSERT INTO Metodos_de_Pago (Nombre_del_Metodo, Descripcion, Activo) VALUES (?, ?, ?)',
             [nombreMetodo, descripcion, activo],
             (error, results) => {
                 if (error) {
                     callback(error, null);
                 } else {
-                    callback(null, results.rows[0]);
+                    // Reconstituimos el objeto del método de pago agregado
+                    const nuevoMetodoPago = {
+                        id: results.insertId,
+                        nombreMetodo,
+                        descripcion,
+                        activo
+                    };
+                    callback(null, nuevoMetodoPago);
                 }
             }
         );
     }
 
-    // Método para actualizar un método de pago
-    static actualizarMetodoPago(id, nuevoMetodoPago, callback) {
-        const { nombreMetodo, descripcion, activo } = nuevoMetodoPago;
-        pool.query(
-            'UPDATE "Métodos de Pago" SET "Nombre del Método" = $1, "Descripción" = $2, "Activo" = $3 WHERE "ID" = $4 RETURNING *',
-            [nombreMetodo, descripcion, activo, id],
-            (error, results) => {
-                if (error) {
-                    callback(error, null);
-                } else {
-                    callback(null, results.rows[0]);
-                }
-            }
-        );
-    }
-
-    // Método para eliminar un método de pago
-    static eliminarMetodoPago(id, callback) {
-        pool.query('DELETE FROM "Métodos de Pago" WHERE "ID" = $1', [id], (error, results) => {
+    // Método para eliminar un método de pago por ID
+    static eliminarMetodoPago(id, callback) {        // Funciona correctamente
+        pool.query('DELETE FROM Metodos_de_Pago WHERE ID = ?', [id], (error, results) => {
             if (error) {
                 callback(error, null);
-            } else {
+            } else if (results.affectedRows > 0) {
                 callback(null, `Método de pago con ID ${id} eliminado con éxito.`);
+            } else {
+                callback(new Error('Método de pago no encontrado'), null);
             }
         });
     }

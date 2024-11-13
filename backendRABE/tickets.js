@@ -10,89 +10,99 @@ class Ticket {
     }
 
     // Método para obtener todos los tickets
-    static obtenerTodos(callback) {
+    static obtenerTodos(callback) {         // Funciona correctamente
         pool.query('SELECT * FROM Tickets', (error, results) => {
             if (error) {
                 callback(error, null);
             } else {
-                callback(null, results.rows);
+                callback(null, results); // En MySQL, los resultados están directamente en results
             }
         });
     }
 
     // Método para obtener un ticket por su ID
-    static obtenerPorId(id, callback) {
-        pool.query('SELECT * FROM Tickets WHERE "ID de ticket" = $1', [id], (error, results) => {
+    static obtenerPorId(id, callback) {         // Funciona correctamente
+        pool.query('SELECT * FROM Tickets WHERE ID_de_ticket = ?', [id], (error, results) => {
             if (error) {
                 callback(error, null);
+            } else if (results.length > 0) {
+                callback(null, results[0]); // Accede al primer resultado en MySQL
             } else {
-                callback(null, results.rows[0]);
+                callback(new Error('Ticket no encontrado'), null);
             }
         });
     }
 
     // Método para agregar un nuevo ticket
-    static agregarTicket(ticket, callback) {
+    static agregarTicket(ticket, callback) {    // Funciono correctamente
         const { id_pedido_venta, fecha_hora_emision, detalles } = ticket;
+
         // Primero, obtenemos el total del pedido/venta
-        pool.query('SELECT "Total" FROM "Pedidos/Ventas" WHERE "ID de pedido/venta" = $1', [id_pedido_venta], (error, results) => {
+        pool.query('SELECT Total FROM Pedidos_Ventas WHERE ID_de_pedido_venta = ?', [id_pedido_venta], (error, results) => {
             if (error) {
                 callback(error, null);
-            } else {
-                const total = results.rows[0]["Total"];
+            } else if (results.length > 0) {
+                const total = results[0].Total;
+
                 // Luego, insertamos el nuevo ticket con el total obtenido
                 pool.query(
-                    'INSERT INTO Tickets ("ID de pedido/venta", "Fecha y hora de emisión", "Total", "Detalles") VALUES ($1, $2, $3, $4) RETURNING "ID de ticket"',
+                    'INSERT INTO Tickets (ID_de_pedido_venta, Fecha_y_hora_de_emision, Total, Detalles) VALUES (?, ?, ?, ?)',
                     [id_pedido_venta, fecha_hora_emision, total, detalles],
                     (error, results) => {
                         if (error) {
                             callback(error, null);
                         } else {
-                            callback(null, results.rows[0]["ID de ticket"]);
+                            callback(null, results.insertId); // En MySQL, obtenemos el ID insertado con insertId
                         }
                     }
                 );
+            } else {
+                callback(new Error('Pedido/venta no encontrado'), null);
             }
         });
     }
 
-
     // Método para actualizar un ticket
-    static actualizarTicket(id, nuevoTicket, callback) {
+    static actualizarTicket(id, nuevoTicket, callback) {    // Funciona correctamente
         const { id_pedido_venta, fecha_hora_emision, total, detalles } = nuevoTicket;
+
         pool.query(
-            'UPDATE Tickets SET "ID de pedido/venta" = $1, "Fecha y hora de emisión" = $2, "Total" = $3, "Detalles" = $4 WHERE "ID de ticket" = $5 RETURNING *',
+            'UPDATE Tickets SET ID_de_pedido_venta = ?, Fecha_y_hora_de_emision = ?, Total = ?, Detalles = ? WHERE ID_de_ticket = ?',
             [id_pedido_venta, fecha_hora_emision, total, detalles, id],
             (error, results) => {
                 if (error) {
                     callback(error, null);
-                } else if (results.rows.length > 0) {
-                    callback(null, results.rows[0]);
+                } else if (results.affectedRows > 0) {
+                    // Si se actualizó correctamente, devolvemos los datos del ticket actualizado
+                    const ticketActualizado = { id, id_pedido_venta, fecha_hora_emision, total, detalles };
+                    callback(null, ticketActualizado);
                 } else {
                     callback(new Error('No se encontró ningún ticket con el ID proporcionado'), null);
                 }
             }
         );
-    }
+    } 
 
     // Método para eliminar un ticket por ID
     static eliminarTicket(id, callback) {
-        pool.query('DELETE FROM Tickets WHERE "ID de ticket" = $1', [id], (error, results) => {
+        pool.query('DELETE FROM Tickets WHERE ID_de_ticket = ?', [id], (error, results) => {
             if (error) {
                 callback(new Error(`Error al eliminar el ticket: ${error.message}`), null);
-            } else {
+            } else if (results.affectedRows > 0) {
                 callback(null, `Ticket con ID ${id} eliminado con éxito.`);
+            } else {
+                callback(new Error('Ticket no encontrado'), null);
             }
         });
     }
 
     // Método para obtener tickets asociados a un pedido/venta específico
-    static obtenerTicketsPorPedidoVenta(id_pedido_venta, callback) {
-        pool.query('SELECT * FROM Tickets WHERE "ID de pedido/venta" = $1', [id_pedido_venta], (error, results) => {
+    static obtenerTicketsPorPedidoVenta(id_pedido_venta, callback) {        // Funciona perfectamente
+        pool.query('SELECT * FROM Tickets WHERE ID_de_pedido_venta = ?', [id_pedido_venta], (error, results) => {
             if (error) {
                 callback(new Error(`Error al obtener los tickets del pedido/venta: ${error.message}`), null);
             } else {
-                callback(null, results.rows);
+                callback(null, results); // En MySQL, los resultados están directamente en results
             }
         });
     }
