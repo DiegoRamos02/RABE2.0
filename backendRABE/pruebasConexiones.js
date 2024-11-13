@@ -4,6 +4,7 @@ const CatalogoProductos = require('./catalogoProductos');
 const Producto = require('./productoInventario');
 const Usuario = require('./usuarios');
 const Empleado = require('./empleados');
+const PedidoVenta = require('./pedidoVenta');
 
 // <------------------ catalagoProductos.js Pruebas ------------------->
 /*
@@ -458,7 +459,7 @@ function pruebaObtenerPedidosPorEmpleado(idEmpleado) {
 }
 // Llama a la función de prueba
 pruebaObtenerPedidosPorEmpleado(1);
-*/
+
 // Funcion para obtener empleados por puesto
 function pruebaObtenerEmpleadosPorPuesto(puesto) {
   Empleado.obtenerPorPuesto(puesto, (error, empleados) => {
@@ -471,3 +472,117 @@ function pruebaObtenerEmpleadosPorPuesto(puesto) {
 }
 // Llama a la función de prueba
 pruebaObtenerEmpleadosPorPuesto('Gerente');
+
+// <------------- Controlador de pedidoVenta.js ------------>
+
+// Funcion para obtener todos los pedidos
+function pruebaObtenerTodosPedidos() {
+  PedidoVenta.obtenerTodos((error, pedidos) => {
+    if (error) {
+      console.error("Error al obtener todos los pedidos/ventas:", error);
+    } else {
+      console.log("Pedidos/ventas:", pedidos);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerTodosPedidos();
+
+// Funcion para obtener pedidos por ID
+function pruebaObtenerPedidoPorId(idPedido) {
+  PedidoVenta.obtenerPorId(idPedido, (error, pedido) => {
+    if (error) {
+      console.error(`Error al obtener el pedido/venta con ID ${idPedido}:`, error);
+    } else {
+      console.log(`Pedido/venta con ID ${idPedido}:`, pedido);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerPedidoPorId(7);
+
+// Funcion para agregar pedidos
+function pruebaAgregarPedidoVenta() {
+  const nuevoPedido = {
+    id_cliente: 1,
+    fecha_hora: new Date(),
+    tipo: 'Consumo en el lugar',
+    estado: 'Pendiente',
+    total: 150.00,
+    metodo_pago: 1,
+    id_empleado: 1
+  };
+
+  PedidoVenta.agregarPedidoVenta(nuevoPedido, (error, pedidoId) => {
+    if (error) {
+      console.error("Error al agregar el pedido/venta:", error);
+    } else {
+      console.log("Pedido/venta agregado con ID:", pedidoId);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaAgregarPedidoVenta();
+
+// Funcion para actualizar pedidos
+function pruebaActualizarPedidoVenta(idPedido) {
+  const pedidoActualizado = {
+    id_cliente: 1,
+    fecha_hora: new Date(),
+    tipo: 'Consumo en el lugar',
+    estado: 'Entregado',
+    total: 200.00,
+    metodo_pago: 1,
+    id_empleado: 1
+  };
+
+  PedidoVenta.actualizarPedidoVenta(idPedido, pedidoActualizado, (error, pedido) => {
+    if (error) {
+      console.error(`Error al actualizar el pedido/venta con ID ${idPedido}:`, error);
+    } else {
+      console.log("Pedido/venta actualizado:", pedido);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaActualizarPedidoVenta(10);
+
+// Funcion para eliminar pedido por ID
+function pruebaEliminarPedidoVenta(idPedido) {
+  PedidoVenta.eliminarPedidoVenta(idPedido, (error, mensaje) => {
+    if (error) {
+      console.error(`Error al eliminar el pedido/venta con ID ${idPedido}:`, error);
+    } else {
+      console.log(mensaje);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaEliminarPedidoVenta(10);
+
+// Funcion para obtener pedidos por empleado
+function pruebaObtenerPedidosPorEmpleado(idEmpleado) {
+  PedidoVenta.obtenerPedidosPorEmpleado(idEmpleado, (error, pedidos) => {
+    if (error) {
+      console.error(`Error al obtener los pedidos/ventas del empleado con ID ${idEmpleado}:`, error);
+    } else {
+      console.log(`Pedidos/ventas del empleado con ID ${idEmpleado}:`, pedidos);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerPedidosPorEmpleado(1);
+
+// Funcion para obtener pedidos por clientes
+function pruebaObtenerPedidosPorCliente(idCliente) {
+  PedidoVenta.obtenerPedidosPorCliente(idCliente, (error, pedidos) => {
+    if (error) {
+      console.error(`Error al obtener los pedidos/ventas del cliente con ID ${idCliente}:`, error);
+    } else {
+      console.log(`Pedidos/ventas del cliente con ID ${idCliente}:`, pedidos);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerPedidosPorCliente(1);
+*/

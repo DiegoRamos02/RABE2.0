@@ -13,54 +13,59 @@ class PedidoVenta {
     }
 
     // Método para obtener todos los pedidos/ventas
-    static obtenerTodos(callback) {
-        pool.query('SELECT * FROM "Pedidos/Ventas"', (error, results) => {
+    static obtenerTodos(callback) {                 // Funciona correctamente
+        pool.query('SELECT * FROM Pedidos_Ventas', (error, results) => {
             if (error) {
                 callback(error, null);
             } else {
-                callback(null, results.rows);
+                callback(null, results); // En MySQL, los resultados están directamente en results
             }
         });
     }
 
     // Método para obtener un pedido/venta por su ID
-    static obtenerPorId(id, callback) {
-        pool.query('SELECT * FROM "Pedidos/Ventas" WHERE "ID de pedido/venta" = $1', [id], (error, results) => {
+    static obtenerPorId(id, callback) {                 // Funciona correctamente
+        pool.query('SELECT * FROM Pedidos_Ventas WHERE ID_de_pedido_venta = ?', [id], (error, results) => {
             if (error) {
                 callback(error, null);
+            } else if (results.length > 0) {
+                callback(null, results[0]); // Accede al primer resultado en MySQL
             } else {
-                callback(null, results.rows[0]);
+                callback(new Error('Pedido/venta no encontrado'), null);
             }
         });
     }
 
     // Método para agregar un nuevo pedido/venta
-    static agregarPedidoVenta(pedidoVenta, callback) {
+    static agregarPedidoVenta(pedidoVenta, callback) {     // Funciona correctamente
         const { id_cliente, fecha_hora, tipo, estado, total, metodo_pago, id_empleado } = pedidoVenta;
+
         pool.query(
-            'INSERT INTO "Pedidos/Ventas" ("ID de cliente", "Fecha y hora del pedido/venta", "Tipo de pedido/venta", "Estado del pedido/venta", "Total", "De método de pago", "ID de empleado") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "ID de pedido/venta"',
+            'INSERT INTO Pedidos_Ventas (ID_de_cliente, Fecha_y_hora_del_pedido_venta, Tipo_de_pedido_venta, Estado_del_pedido_venta, Total, De_metodo_de_pago, ID_de_empleado) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [id_cliente, fecha_hora, tipo, estado, total, metodo_pago, id_empleado],
             (error, results) => {
                 if (error) {
                     callback(error, null);
                 } else {
-                    callback(null, results.rows[0]["ID de pedido/venta"]);
+                    callback(null, results.insertId); // En MySQL, obtenemos el ID insertado con insertId
                 }
             }
         );
     }
 
     // Método para actualizar un pedido/venta
-    static actualizarPedidoVenta(id, nuevoPedidoVenta, callback) {
+    static actualizarPedidoVenta(id, nuevoPedidoVenta, callback) { // Funciona correctamente
         const { id_cliente, fecha_hora, tipo, estado, total, metodo_pago, id_empleado } = nuevoPedidoVenta;
+
         pool.query(
-            'UPDATE "Pedidos/Ventas" SET "ID de cliente" = $1, "Fecha y hora del pedido/venta" = $2, "Tipo de pedido/venta" = $3, "Estado del pedido/venta" = $4, "Total" = $5, "De método de pago" = $6, "ID de empleado" = $7 WHERE "ID de pedido/venta" = $8 RETURNING *',
+            'UPDATE Pedidos_Ventas SET ID_de_cliente = ?, Fecha_y_hora_del_pedido_venta = ?, Tipo_de_pedido_venta = ?, Estado_del_pedido_venta = ?, Total = ?, De_metodo_de_pago = ?, ID_de_empleado = ? WHERE ID_de_pedido_venta = ?',
             [id_cliente, fecha_hora, tipo, estado, total, metodo_pago, id_empleado, id],
             (error, results) => {
                 if (error) {
                     callback(error, null);
-                } else if (results.rows.length > 0) {
-                    callback(null, results.rows[0]);
+                } else if (results.affectedRows > 0) {
+                    // Retorna el objeto con los datos actualizados
+                    callback(null, { id, id_cliente, fecha_hora, tipo, estado, total, metodo_pago, id_empleado });
                 } else {
                     callback(new Error('No se encontró ningún pedido/venta con el ID proporcionado'), null);
                 }
@@ -69,34 +74,36 @@ class PedidoVenta {
     }
 
     // Método para eliminar un pedido/venta por ID
-    static eliminarPedidoVenta(id, callback) {
-        pool.query('DELETE FROM "Pedidos/Ventas" WHERE "ID de pedido/venta" = $1', [id], (error, results) => {
+    static eliminarPedidoVenta(id, callback) {      // Funciona correctamente
+        pool.query('DELETE FROM Pedidos_Ventas WHERE ID_de_pedido_venta = ?', [id], (error, results) => {
             if (error) {
                 callback(new Error(`Error al eliminar el pedido/venta: ${error.message}`), null);
-            } else {
+            } else if (results.affectedRows > 0) {
                 callback(null, `Pedido/Venta con ID ${id} eliminado con éxito.`);
+            } else {
+                callback(new Error('Pedido/Venta no encontrado'), null);
             }
         });
     }
 
     // Método para obtener pedidos/ventas realizados por un empleado
-    static obtenerPedidosPorEmpleado(id_empleado, callback) {
-        pool.query('SELECT * FROM "Pedidos/Ventas" WHERE "ID de empleado" = $1', [id_empleado], (error, results) => {
+    static obtenerPedidosPorEmpleado(id_empleado, callback) {       // Funciona correctamente
+        pool.query('SELECT * FROM Pedidos_Ventas WHERE ID_de_empleado = ?', [id_empleado], (error, results) => {
             if (error) {
                 callback(new Error(`Error al obtener los pedidos/ventas del empleado: ${error.message}`), null);
             } else {
-                callback(null, results.rows);
+                callback(null, results); // En MySQL, los resultados están directamente en results
             }
         });
     }
 
     // Método para obtener pedidos/ventas de un cliente
-    static obtenerPedidosPorCliente(id_cliente, callback) {
-        pool.query('SELECT * FROM "Pedidos/Ventas" WHERE "ID de cliente" = $1', [id_cliente], (error, results) => {
+    static obtenerPedidosPorCliente(id_cliente, callback) {     // Funciona correctamente
+        pool.query('SELECT * FROM Pedidos_Ventas WHERE ID_de_cliente = ?', [id_cliente], (error, results) => {
             if (error) {
                 callback(new Error(`Error al obtener los pedidos/ventas del cliente: ${error.message}`), null);
             } else {
-                callback(null, results.rows);
+                callback(null, results); // En MySQL, los resultados están directamente en results
             }
         });
     }
