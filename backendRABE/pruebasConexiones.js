@@ -5,6 +5,7 @@ const Producto = require('./productoInventario');
 const Usuario = require('./usuarios');
 const Empleado = require('./empleados');
 const PedidoVenta = require('./pedidoVenta');
+const Cliente = require('./clientes');
 
 // <------------------ catalagoProductos.js Pruebas ------------------->
 /*
@@ -585,4 +586,86 @@ function pruebaObtenerPedidosPorCliente(idCliente) {
 }
 // Llama a la función de prueba
 pruebaObtenerPedidosPorCliente(1);
+
+// <------------ Controlador para clientes.js -------------->
+
+// Funcion para obtener todos los clientes
+function pruebaObtenerTodosClientes() {
+  Cliente.obtenerTodos((error, clientes) => {
+    if (error) {
+      console.error("Error al obtener todos los clientes:", error);
+    } else {
+      console.log("Clientes:", clientes);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerTodosClientes();
+
+// Funcion para obtener clientes por ID
+function pruebaObtenerClientePorId(idCliente) {
+  Cliente.obtenerPorId(idCliente, (error, cliente) => {
+    if (error) {
+      console.error(`Error al obtener el cliente con ID ${idCliente}:`, error);
+    } else {
+      console.log(`Cliente con ID ${idCliente}:`, cliente);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerClientePorId(1);
+
+// Funcion para agregar clientes
+function pruebaAgregarCliente() {
+  const nuevoCliente = {
+    nombre: 'Diego',
+    apellido: 'Ramos',
+    correo: 'diego.ramos@example.com',
+    telefono: '1234567890',
+    direccion: 'Calle Falsa 123'
+  };
+
+  Cliente.agregarCliente(nuevoCliente, (error, cliente) => {
+    if (error) {
+      console.error("Error al agregar el cliente:", error);
+    } else {
+      console.log("Cliente agregado:", cliente);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaAgregarCliente();
+
+// Funcion para actualizar clientes
+function pruebaActualizarCliente(idCliente) {
+  const clienteActualizado = {
+    nombre: 'Carlos',
+    apellido: 'Garcia',
+    correo: 'carlos.garcia@example.com',
+    telefono: '0987654321',
+    direccion: 'Avenida Siempre Viva 742'
+  };
+
+  Cliente.actualizarCliente(idCliente, clienteActualizado, (error, cliente) => {
+    if (error) {
+      console.error(`Error al actualizar el cliente con ID ${idCliente}:`, error);
+    } else {
+      console.log("Cliente actualizado:", cliente);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaActualizarCliente(4);
 */
+// Funcion para eliminar clientes por ID
+function pruebaEliminarCliente(idCliente) {
+  Cliente.eliminarCliente(idCliente, (error, mensaje) => {
+    if (error) {
+      console.error(`Error al eliminar el cliente con ID ${idCliente}:`, error);
+    } else {
+      console.log(mensaje);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaEliminarCliente(1);

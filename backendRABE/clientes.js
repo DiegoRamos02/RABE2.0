@@ -12,51 +12,69 @@ class Cliente {
         this.direccion = direccion;
     }
 
-    static obtenerTodos(callback) {
+    // Método para obtener todos los clientes
+    static obtenerTodos(callback) {             // Funciona correctamente
         pool.query('SELECT * FROM Clientes', (error, results) => {
             if (error) {
                 callback(error, null);
             } else {
-                callback(null, results.rows);
+                callback(null, results); // En MySQL, los resultados están directamente en results
             }
         });
     }
 
-    static obtenerPorId(id, callback) {
-        pool.query('SELECT * FROM "clientes" WHERE "ID" = $1', [id], (error, results) => {
+    // Método para obtener un cliente por su ID
+    static obtenerPorId(id, callback) {         // Funciona correctamente
+        pool.query('SELECT * FROM Clientes WHERE ID = ?', [id], (error, results) => {
             if (error) {
                 callback(error, null);
+            } else if (results.length > 0) {
+                callback(null, results[0]); // Accede al primer resultado en MySQL
             } else {
-                callback(null, results.rows[0]);
+                callback(new Error('Cliente no encontrado'), null);
             }
         });
     }
 
-    static agregarCliente(cliente, callback) {
+    // Método para agregar un nuevo cliente
+    static agregarCliente(cliente, callback) {  // Funciona correctamente
         const { nombre, apellido, correo, telefono, direccion } = cliente;
+
         pool.query(
-            'INSERT INTO Clientes ("Nombre", "Apellido", "Correo electrónico", "Teléfono", "Dirección") VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            'INSERT INTO Clientes (Nombre, Apellido, Correo_electronico, Telefono, Direccion) VALUES (?, ?, ?, ?, ?)',
             [nombre, apellido, correo, telefono, direccion],
             (error, results) => {
                 if (error) {
                     callback(error, null);
                 } else {
-                    callback(null, results.rows[0]);
+                    const nuevoCliente = {
+                        id: results.insertId,
+                        nombre,
+                        apellido,
+                        correo,
+                        telefono,
+                        direccion,
+                    };
+                    callback(null, nuevoCliente); // Devuelve el cliente agregado con el ID insertado
                 }
             }
         );
     }
 
-    static actualizarCliente(id, nuevoCliente, callback) {
+    // Método para actualizar un cliente
+    static actualizarCliente(id, nuevoCliente, callback) {      // Funciono correctamente
         const { nombre, apellido, correo, telefono, direccion } = nuevoCliente;
+
         pool.query(
-            'UPDATE Clientes SET "Nombre" = $1, "Apellido" = $2, "Correo electrónico" = $3, "Teléfono" = $4, "Dirección" = $5 WHERE "ID" = $6 RETURNING *',
+            'UPDATE Clientes SET Nombre = ?, Apellido = ?, Correo_electronico = ?, Telefono = ?, Direccion = ? WHERE ID = ?',
             [nombre, apellido, correo, telefono, direccion, id],
             (error, results) => {
                 if (error) {
                     callback(error, null);
-                } else if (results.rows.length > 0) {
-                    callback(null, results.rows[0]);
+                } else if (results.affectedRows > 0) {
+                    // Si se actualizaron filas, devolvemos los datos del cliente actualizado
+                    const clienteActualizado = { id, nombre, apellido, correo, telefono, direccion };
+                    callback(null, clienteActualizado);
                 } else {
                     callback(new Error('No se encontró ningún cliente con el ID proporcionado'), null);
                 }
@@ -64,12 +82,22 @@ class Cliente {
         );
     }
 
-    static eliminarCliente(id, callback) {
-        pool.query('DELETE FROM Clientes WHERE "ID" = $1', [id], (error, results) => {
+    static eliminarCliente(id, callback) {     // Funciono correctamente
+        // Primero, eliminamos los pedidos/ventas relacionados con el cliente
+        pool.query('DELETE FROM Pedidos_Ventas WHERE ID_de_cliente = ?', [id], (error, results) => {
             if (error) {
                 callback(error, null);
             } else {
-                callback(null, `Cliente con ID ${id} eliminado con éxito.`);
+                // Ahora, eliminamos el cliente
+                pool.query('DELETE FROM Clientes WHERE ID = ?', [id], (error, results) => {
+                    if (error) {
+                        callback(error, null);
+                    } else if (results.affectedRows > 0) {
+                        callback(null, `Cliente con ID ${id} eliminado con éxito.`);
+                    } else {
+                        callback(new Error('Cliente no encontrado'), null);
+                    }
+                });
             }
         });
     }
