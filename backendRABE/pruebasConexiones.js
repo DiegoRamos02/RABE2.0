@@ -3,6 +3,7 @@
 const CatalogoProductos = require('./catalogoProductos');
 const Producto = require('./productoInventario');
 const Usuario = require('./usuarios');
+const Empleado = require('./empleados');
 
 // <------------------ catalagoProductos.js Pruebas ------------------->
 /*
@@ -357,4 +358,116 @@ function pruebaObtenerPorNombreUsuario(nombreUsuario) {
 
 // Llama a la función de prueba
 pruebaObtenerPorNombreUsuario('admin1');
+
+// <----------- Controladores para los empleados --------------->
+
+// Funcion para obtener todos los emleados
+function pruebaObtenerTodosEmpleados() {
+  Empleado.obtenerTodos((error, empleados) => {
+    if (error) {
+      console.error("Error al obtener todos los empleados:", error);
+    } else {
+      console.log("Empleados:", empleados);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerTodosEmpleados();
+
+// Funcion para obtener empleado por ID
+function pruebaObtenerEmpleadoPorId(idEmpleado) {
+  Empleado.obtenerPorId(idEmpleado, (error, empleado) => {
+    if (error) {
+      console.error(`Error al obtener el empleado con ID ${idEmpleado}:`, error);
+    } else {
+      console.log(`Empleado con ID ${idEmpleado}:`, empleado);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerEmpleadoPorId(1);
+
+// Funcion para agregar nuevo empleado
+function pruebaAgregarEmpleado() {
+  const nuevoEmpleado = {
+    nombre: 'Carlos',
+    apellido: 'López',
+    correo_electronico: 'carlos.lopez@example.com',
+    contraseña: 'securepassword',
+    puesto: 'Supervisor',
+    rol: 'UsuarioRegular',
+    acceso_configuracion: false
+  };
+
+  Empleado.agregarEmpleado(nuevoEmpleado, (error, empleadoId) => {
+    if (error) {
+      console.error("Error al agregar el empleado:", error);
+    } else {
+      console.log("Empleado agregado con ID:", empleadoId);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaAgregarEmpleado();
+
+// Funcion para actualizar empleado
+function pruebaActualizarEmpleado(idEmpleado) {
+  const empleadoActualizado = {
+    nombre: 'Carlos',
+    apellido: 'García',
+    correo_electronico: 'carlos.garcia@example.com',
+    contraseña: 'newsecurepassword',
+    puesto: 'Gerente',
+    rol: 'Administrador',
+    acceso_configuracion: true
+  };
+
+  Empleado.actualizarEmpleado(idEmpleado, empleadoActualizado, (error, empleado) => {
+    if (error) {
+      console.error(`Error al actualizar el empleado con ID ${idEmpleado}:`, error);
+    } else {
+      console.log("Empleado actualizado:", empleado);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaActualizarEmpleado(1);
+
+// Funcion para eliminar empleado por ID
+function pruebaEliminarEmpleado(idEmpleado) {
+  Empleado.eliminarEmpleado(idEmpleado, (error, mensaje) => {
+    if (error) {
+      console.error(`Error al eliminar el empleado con ID ${idEmpleado}:`, error);
+    } else {
+      console.log(mensaje);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaEliminarEmpleado(2);
+
+// Funcion para obtener pedidos por empleado
+function pruebaObtenerPedidosPorEmpleado(idEmpleado) {
+  Empleado.obtenerPedidosPorEmpleado(idEmpleado, (error, pedidos) => {
+    if (error) {
+      console.error(`Error al obtener los pedidos/ventas del empleado con ID ${idEmpleado}:`, error);
+    } else {
+      console.log(`Pedidos/ventas del empleado con ID ${idEmpleado}:`, pedidos);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerPedidosPorEmpleado(1);
 */
+// Funcion para obtener empleados por puesto
+function pruebaObtenerEmpleadosPorPuesto(puesto) {
+  Empleado.obtenerPorPuesto(puesto, (error, empleados) => {
+    if (error) {
+      console.error(`Error al obtener los empleados por puesto "${puesto}":`, error);
+    } else {
+      console.log(`Empleados con el puesto "${puesto}":`, empleados);
+    }
+  });
+}
+// Llama a la función de prueba
+pruebaObtenerEmpleadosPorPuesto('Gerente');
