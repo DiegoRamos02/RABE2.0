@@ -809,7 +809,7 @@ function pruebaAgregarMetodoPago() {
 }
 // Llama a la función de prueba
 pruebaAgregarMetodoPago();
-*/
+
 // Funcion para eliminar metodo de pago
 function pruebaEliminarMetodoPago(idMetodoPago) {
   MetodoPago.eliminarMetodoPago(idMetodoPago, (error, mensaje) => {
@@ -821,4 +821,5 @@ function pruebaEliminarMetodoPago(idMetodoPago) {
   });
 }
 // Llama a la función de prueba
-pruebaEliminarMetodoPago(4);
+pruebaEliminarMetodoPago(5);
+*/
