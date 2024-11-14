@@ -37,10 +37,16 @@ class Empleado {
         });
     }
 
-    // Método para agregar un nuevo empleado
-    static agregarEmpleado(empleado, callback) {        // Funciono correctamente
-        const { nombre, apellido, correo_electronico, contraseña, puesto, rol, acceso_configuracion } = empleado;
-        bcrypt.hash(contraseña, 10, (err, hash) => {
+    // Metodo para agregar empleado
+    static agregarEmpleado(empleado, callback) {
+        const { nombre, apellido, correo_electronico, password, puesto, rol, acceso_configuracion } = empleado;
+
+        if (!password) {
+            callback(new Error("La contraseña es requerida"), null);
+            return;
+        }
+
+        bcrypt.hash(password, 10, (err, hash) => {
             if (err) {
                 callback(err, null);
             } else {
@@ -60,27 +66,47 @@ class Empleado {
     }
 
     // Método para actualizar un empleado
-    static actualizarEmpleado(id, nuevoEmpleado, callback) {       // Funciono correctamente
-        const { nombre, apellido, correo_electronico, contraseña, puesto, rol, acceso_configuracion } = nuevoEmpleado;
-        bcrypt.hash(contraseña, 10, (err, hash) => {
-            if (err) {
-                callback(err, null);
-            } else {
-                pool.query(
-                    'UPDATE Empleados SET Nombre = ?, Apellido = ?, Correo_electronico = ?, Contrasena = ?, Puesto = ?, Rol = ?, Acceso_a_la_configuracion_del_sistema = ? WHERE ID_de_empleado = ?',
-                    [nombre, apellido, correo_electronico, hash, puesto, rol, acceso_configuracion, id],
-                    (error, results) => {
-                        if (error) {
-                            callback(error, null);
-                        } else if (results.affectedRows > 0) {
-                            callback(null, { id, nombre, apellido, correo_electronico, puesto, rol, acceso_configuracion });
-                        } else {
-                            callback(new Error('Empleado no encontrado'), null);
+    static actualizarEmpleado(id, nuevoEmpleado, callback) {
+        const { nombre, apellido, correo_electronico, password, puesto, rol, acceso_configuracion } = nuevoEmpleado;
+
+        // Si el campo password está presente, hashea la nueva contraseña
+        if (password) {
+            bcrypt.hash(password, 10, (err, hash) => {
+                if (err) {
+                    callback(err, null);
+                } else {
+                    // Luego de hash, continúa con la actualización, incluyendo la nueva contraseña
+                    pool.query(
+                        'UPDATE Empleados SET Nombre = ?, Apellido = ?, Correo_electronico = ?, Contrasena = ?, Puesto = ?, Rol = ?, Acceso_a_la_configuracion_del_sistema = ? WHERE ID_de_empleado = ?',
+                        [nombre, apellido, correo_electronico, hash, puesto, rol, acceso_configuracion, id],
+                        (error, results) => {
+                            if (error) {
+                                callback(error, null);
+                            } else if (results.affectedRows > 0) {
+                                callback(null, { id, nombre, apellido, correo_electronico, puesto, rol, acceso_configuracion });
+                            } else {
+                                callback(new Error('Empleado no encontrado'), null);
+                            }
                         }
+                    );
+                }
+            });
+        } else {
+            // Si password no está presente, solo actualiza los demás campos
+            pool.query(
+                'UPDATE Empleados SET Nombre = ?, Apellido = ?, Correo_electronico = ?, Puesto = ?, Rol = ?, Acceso_a_la_configuracion_del_sistema = ? WHERE ID_de_empleado = ?',
+                [nombre, apellido, correo_electronico, puesto, rol, acceso_configuracion, id],
+                (error, results) => {
+                    if (error) {
+                        callback(error, null);
+                    } else if (results.affectedRows > 0) {
+                        callback(null, { id, nombre, apellido, correo_electronico, puesto, rol, acceso_configuracion });
+                    } else {
+                        callback(new Error('Empleado no encontrado'), null);
                     }
-                );
-            }
-        });
+                }
+            );
+        }
     }
 
     // Método para eliminar un empleado por ID

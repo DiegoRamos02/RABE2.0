@@ -34,11 +34,11 @@ class Usuario {
     }
 
     // Método para agregar un nuevo usuario
-    static agregarUsuario(usuario, callback) {      // Funciona correctamente
-        const { nombreUsuario, contraseña, rol } = usuario;
+    static agregarUsuario(usuario, callback) {
+        const { nombreUsuario, password, rol } = usuario;
 
         // Hashear la contraseña antes de guardarla en la base de datos
-        bcrypt.hash(contraseña, 10, (error, hash) => {
+        bcrypt.hash(password, 10, (error, hash) => {
             if (error) {
                 callback(error, null);
             } else {
@@ -50,7 +50,7 @@ class Usuario {
                             callback(error, null);
                         } else {
                             const nuevoUsuario = {
-                                id: results.insertId, // Obtener el ID generado automáticamente
+                                id: results.insertId,
                                 nombreUsuario,
                                 rol,
                             };
@@ -61,37 +61,59 @@ class Usuario {
             }
         });
     }
-
+    
     // Método para actualizar un usuario
     static actualizarUsuario(id, nuevoUsuario, callback) {
-        const { nombreUsuario, contraseña, rol } = nuevoUsuario;
+        const { nombreUsuario, password, rol } = nuevoUsuario;
 
-        // Hashear la nueva contraseña antes de guardarla en la base de datos
-        bcrypt.hash(contraseña, 10, (error, hash) => {
-            if (error) {
-                callback(error, null);
-            } else {
-                pool.query(
-                    'UPDATE Usuarios SET NombreUsuario = ?, ContraseñaHash = ?, Rol = ? WHERE ID = ?',
-                    [nombreUsuario, hash, rol, id],
-                    (error, results) => {
-                        if (error) {
-                            callback(error, null);
-                        } else if (results.affectedRows > 0) {
-                            // Si se actualizaron filas, devolvemos los datos del usuario actualizado
-                            const usuarioActualizado = {
-                                id,
-                                nombreUsuario,
-                                rol,
-                            };
-                            callback(null, usuarioActualizado);
-                        } else {
-                            callback(new Error('Usuario no encontrado'), null);
+        // Verificamos que el campo password esté presente antes de usar bcrypt.hash
+        if (password) {
+            bcrypt.hash(password, 10, (error, hash) => {
+                if (error) {
+                    callback(error, null);
+                } else {
+                    pool.query(
+                        'UPDATE Usuarios SET NombreUsuario = ?, ContraseñaHash = ?, Rol = ? WHERE ID = ?',
+                        [nombreUsuario, hash, rol, id],
+                        (error, results) => {
+                            if (error) {
+                                callback(error, null);
+                            } else if (results.affectedRows > 0) {
+                                // Devuelve los datos del usuario actualizado
+                                const usuarioActualizado = {
+                                    id,
+                                    nombreUsuario,
+                                    rol,
+                                };
+                                callback(null, usuarioActualizado);
+                            } else {
+                                callback(new Error('Usuario no encontrado'), null);
+                            }
                         }
+                    );
+                }
+            });
+        } else {
+            // Si no se proporciona una contraseña, actualizamos solo el nombre de usuario y el rol
+            pool.query(
+                'UPDATE Usuarios SET NombreUsuario = ?, Rol = ? WHERE ID = ?',
+                [nombreUsuario, rol, id],
+                (error, results) => {
+                    if (error) {
+                        callback(error, null);
+                    } else if (results.affectedRows > 0) {
+                        const usuarioActualizado = {
+                            id,
+                            nombreUsuario,
+                            rol,
+                        };
+                        callback(null, usuarioActualizado);
+                    } else {
+                        callback(new Error('Usuario no encontrado'), null);
                     }
-                );
-            }
-        });
+                }
+            );
+        }
     }
 
     // Método para eliminar un usuario
