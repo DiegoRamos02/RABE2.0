@@ -1,4 +1,4 @@
-const pool = require('../db_conection/db');
+const pool = require('./db_conection/db');
 const bcrypt = require('bcrypt'); 
 
 class Usuario {
