@@ -15,12 +15,12 @@ class CatalogoProductos {
     static obtenerTodos(callback) {     // Funciono correctamente
         console.log("Iniciando consulta de obtenerTodos...");
         const query = `SELECT * FROM Catalogo_de_Productos;`;
-        pool.query(query, (error, results) => {
+        pool.query('SELECT * FROM Catalogo_de_Productos', (error, results) => {
             if (error) {
-                console.error("Error al obtener todos los productos:", error);
+                console.error('Error al obtener productos:', error);
                 callback(error, null);
             } else {
-                console.log("Resultados de Catalogo_de_Productos:", results);
+                console.log('Resultados obtenidos:', results);
                 callback(null, results);
             }
         });

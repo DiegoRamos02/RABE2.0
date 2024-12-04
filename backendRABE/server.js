@@ -1,3 +1,8 @@
+// Elimina el caché de todos los módulos cargados
+Object.keys(require.cache).forEach((key) => {
+    delete require.cache[key];
+});
+
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -13,6 +18,7 @@ const pedidosController = require('./pedidoVentaController'); // Listo, funciono
 const productosController = require('./productoInventarioController'); // Listo, funciono correctamente
 const ticketsController = require('./ticketsController');   // Listo, funciono perfectamente
 const usuariosController = require('./usuariosController'); // Listo, funciono perfectamente
+const catalogoProductosController = require('./catalogoProductosController');
 // Importa otros controladores de la misma manera
 
 // Configura las rutas (ejemplo)
@@ -23,6 +29,7 @@ app.use('/api/pedidos', pedidosController);
 app.use('/api/productos', productosController);
 app.use('/api/tickets', ticketsController);
 app.use('/api/usuarios', usuariosController);
+app.use('/api/catalogo-productos', catalogoProductosController);
 
 // Iniciar el servidor
 app.listen(PORT, () => {
