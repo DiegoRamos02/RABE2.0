@@ -24,6 +24,7 @@ class CatalogoProductos {
                 callback(null, results);
             }
         });
+
     }
 
     static obtenerPorId(id, callback) {     // Funciono correctamente
